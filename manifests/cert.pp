@@ -40,6 +40,10 @@
 #   will be loaded from the ::sslmgmt::params::pkistore 'default'
 #   pkistore
 #
+#   NOTE: there is an extra key of 'filename' that may be used to
+#   override the filename that is used for the destination file. This
+#   key is only available when using a custom pkistore
+#
 # === Examples
 #
 # === Authors
@@ -79,10 +83,87 @@ define sslmgmt::cert (
     }
   }
 
+  # get our certificate hash
+  $certificates = hiera('sslmgmt::certs')
+  validate_hash($certificates)
+  
+  # make sure we actually have a cert
+  if (! has_key($certificates, $title)) {
+    fail("please ensure that ${title} exists in hiera sslmgmt::certs")
+  }
+
+  # make sure that there is a chain store if it's being requested
+  if ($chain) {
+    validate_string($chain)
+
+    $ca = hiera('sslmgmt::ca')
+    validate_hash($ca)
+
+    if (! has_key($ca, $chain)) {
+      fail("please ensure that ${chain} exists in hiera sslmgmt::ca")
+    }
+    else {
+      $cacert = $ca[$chain]
+    }
+  }
+
+  # make sure the define cert actually has needed values
+  $certstore = $certificates[$title]
+  validate_hash($certstore)
+
+  if (! has_key($certstore, 'cert')) {
+    fail("certificate ${title} does not have a 'cert' value")
+  }
+  else {
+    $cert = $certstore['cert']
+  }
+
+  # crack out the default pkistore as we need to use it for a few
+  # operations
+  $_default_pkistore = $sslmgmt::params::pkistore['default']
+  validate_hash($_default_pkistore)
+
   # customstore is only used if pkistore is set to custom
   # It is then required to be a hash
   if ($pkistore == 'custom') {
     validate_hash($customstore)
+  
+    # merge the customstore with the default store to get the real
+    # pkistore
+    $_pkistore = merge($_default_pkistore, $customstore)
+  }
+  else {
+    $_pkistore = merge($_default_pkistore,
+        $sslmgmt::params::pkistore[$pkistore])
   }
 
+  if (has_key($_pkistore, 'filename')) {
+    $_certname = $_pkistore['filename']
+  }
+  else {
+    $_certpath = $_pkistore['certpath']
+
+    if ($chain) {
+      $_certname = "${_certpath}/${title}-${chain}.pem"
+    }
+    else {
+      $_certname = "${_certpath}/${title}.pem"
+    }
+  }
+
+  # create the cert content
+  if ($chain) {
+    $_certcontent = "${cert}${cacert}"
+  }
+  else {
+    $_certcontent = $cert
+  }
+
+  file { $_certname:
+    ensure  => $ensure,
+    content => $_certcontent,
+    owner   => $_pkistore['owner'],
+    group   => $_pkistore['group'],
+    mode    => $_pkistore['certmode'],
+  }
 }

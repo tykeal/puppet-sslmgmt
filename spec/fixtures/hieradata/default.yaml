@@ -1,0 +1,21 @@
+---
+sslmgmt::ca:
+  testca: |
+          This is a test
+          cacert
+
+sslmgmt::certs:
+  test_certificate:
+    cert: |
+          This is a test cert for
+          testcert
+    key: |
+          This is the key for
+          testcert
+  missing_key:
+    cert: 'Cert with missing key'
+  missing_cert:
+    key: 'Key missing cert'
+  test_no_hash: 'This cert is bad'
+
+# vim: ts=2 sw=2 sts=2 et ai :
