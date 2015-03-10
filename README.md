@@ -6,7 +6,6 @@
 2. [Module Description - What the module does and why it is useful](#module-description)
 3. [Setup - The basics of getting started with sslmgmt](#setup)
     * [What sslmgmt affects](#what-sslmgmt-affects)
-    * [Setup requirements](#setup-requirements)
     * [Beginning with sslmgmt](#beginning-with-sslmgmt)
 4. [Usage - Configuration options and additional functionality](#usage)
 5. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
@@ -15,41 +14,36 @@
 
 ## Overview
 
-A one-maybe-two sentence summary of what the module does/what problem it solves.
-This is your 30 second elevator pitch for your module. Consider including
-OS/Puppet version it works with.
+A simple way to manage certificates in your infrastructure without an
+HSM.
+
+Do you have to deal with certificates scattered around your
+infrastructure and you don't have an HSM to use? Do you have systems
+that need to share a certificate? Then this is module for you!
 
 ## Module Description
 
-If applicable, this section should have a brief description of the technology
-the module integrates with and what that integration enables. This section
-should answer the questions: "What does this module *do*?" and "Why would I use
-it?"
+This module is designed to read certificate keys, public certs and the
+CA chaining needed to properly deploy certificate around your
+environment and get it right everytime.
 
-If your module has a range of functionality (installation, configuration,
-management, etc.) this is the time to mention it.
+All information is stored in what we refer to as key banks which are
+hash sets stored in hiera. If you're leary of storing your private keys
+in your hiera please look at using eyaml to resolve this issue.
 
 ## Setup
 
 ### What sslmgmt affects
 
-* A list of files, packages, services, or operations that the module will alter,
-  impact, or execute on the system it's installed on.
-* This is a great place to stick any warnings.
-* Can be in list or paragraph form.
-
-### Setup Requirements **OPTIONAL**
-
-If your module requires anything extra before setting up (pluginsync enabled,
-etc.), mention it here.
+sslmgmt is a single define used for deploying a standalone public
+certificate, with or without chaining information and by default also
+deploys the private key in the appropriate location with sane file
+modes.
 
 ### Beginning with sslmgmt
 
-The very basic steps needed for a user to get the module up and running.
-
-If your most recent release breaks compatibility or requires particular steps
-for upgrading, you may wish to include an additional section here: Upgrading
-(For an example, see http://forge.puppetlabs.com/puppetlabs/firewall).
+Install the module from the forge and then call the define on a given
+certificate.
 
 ## Usage
 
@@ -65,15 +59,9 @@ with things. (We are working on automating this section!)
 
 ## Limitations
 
-This is where you list OS compatibility, version compatibility, etc.
+Only tested on EL7 at present
 
 ## Development
 
 Since your module is awesome, other users will want to play with it. Let them
 know what the ground rules for contributing are.
-
-## Release Notes/Contributors/Etc **Optional**
-
-If you aren't using changelog, put your release notes here (though you should
-consider using changelog). You may also add any additional sections you feel are
-necessary or important to include here. Please use the `## ` header.

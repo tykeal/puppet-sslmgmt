@@ -30,6 +30,18 @@ describe 'sslmgmt::cert', :type => :define do
               /ensure must be one of true, false, 'present', or 'absent'/)
     end
 
+    it 'should report error on bad installkey' do
+      params.merge!({'installkey' => 'badvalue'})
+      expect { subject }.to raise_error(Puppet::Error,
+              /"badvalue" is not a boolean/)
+    end
+
+    it 'should report error on bad onefile' do
+      params.merge!({'onefile' => 'badvalue'})
+      expect { subject }.to raise_error(Puppet::Error,
+              /"badvalue" is not a boolean/)
+    end
+
     it { is_expected.to contain_file(
           '/etc/pki/tls/certs/test_certificate.pem').with(
           'mode'    => '0644',
@@ -37,6 +49,31 @@ describe 'sslmgmt::cert', :type => :define do
           'group'   => 'root',
           'content' => "This is a test cert for\ntestcert\n",
     ) }
+
+    it { is_expected.to contain_file(
+          '/etc/pki/tls/private/test_certificate.pem').with(
+          'mode'    => '0600',
+          'owner'   => 'root',
+          'group'   => 'root',
+          'content' => "This is the key for\ntestcert\n",
+    ) }
+
+    it 'should have a combined key and certificate file if onefile is set' do
+      params.merge!({'onefile' => true})
+      is_expected.to contain_file(
+          '/etc/pki/tls/private/test_certificate.pem').with(
+          'mode'    => '0600',
+          'owner'   => 'root',
+          'group'   => 'root',
+          'content' => "This is the key for\ntestcert\nThis is a test cert for\ntestcert\n"
+        )
+    end
+
+    it 'should not write a key if installkey is false' do
+      params.merge!({'installkey' => false})
+      is_expected.not_to contain_file(
+          '/etc/pki/tls/private/test_certificate.pem')
+    end
   end
 
   context 'with a chain set' do
@@ -65,10 +102,12 @@ describe 'sslmgmt::cert', :type => :define do
   context 'with custom pkistore' do
     let(:params) {
       {
-        'pkistore'    => 'custom',
-        'customstore' => {
-          'filename'  => '/random/filepath/customfile.pem',
-          'owner'     => 'randomowner',
+        'pkistore'        => 'custom',
+        'customstore'     => {
+          'certfilename'  => '/random/filepath/customfile.pem',
+          'keyfilename'   => '/random/filepath/customkey.pem',
+          'owner'         => 'randomowner',
+          'group'         => 'randomgroup',
         },
       }
     }
@@ -82,8 +121,16 @@ describe 'sslmgmt::cert', :type => :define do
         '/random/filepath/customfile.pem').with(
           'owner'   => 'randomowner',
           'mode'    => '0644',
-          'group'   => 'root',
+          'group'   => 'randomgroup',
           'content' => "This is a test cert for\ntestcert\n",
+    ) }
+
+    it { is_expected.to contain_file(
+        '/random/filepath/customkey.pem').with(
+          'owner'   => 'randomowner',
+          'mode'    => '0600',
+          'group'   => 'randomgroup',
+          'content' => "This is the key for\ntestcert\n",
     ) }
   end
 
@@ -102,6 +149,15 @@ describe 'sslmgmt::cert', :type => :define do
     it 'should fail because the hash does not have a cert value in sslmgt::certs' do
       expect { subject }.to raise_error(Puppet::Error,
               /certificate missing_cert does not have a 'cert' value/)
+    end
+  end
+
+  context 'hash missing key' do
+    let(:title) { 'missing_key' }
+
+    it 'should fail because the has does not have a key value in sslmgt::certs' do
+      expect { subject}.to raise_error(Puppet::Error,
+              /certificate missing_key does not have a 'key' value/)
     end
   end
 

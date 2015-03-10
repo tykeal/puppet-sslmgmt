@@ -40,9 +40,28 @@
 #   will be loaded from the ::sslmgmt::params::pkistore 'default'
 #   pkistore
 #
-#   NOTE: there is an extra key of 'filename' that may be used to
-#   override the filename that is used for the destination file. This
+#   NOTE: there is an extra key of 'certfilename' that may be used to
+#   override the certfilename that is used for the destination file. This
 #   key is only available when using a custom pkistore
+#
+#   NOTE: there is an extra key of 'keyfilename' that may be used to
+#   override the keyfilename that is used for the destination key. This
+#   is only available when using a custom pkistore
+#
+# [*installkey*]
+#   Boolean to determine if the certificate key should also be installed
+#   Default: true
+#
+# [*onefile*]
+#   Boolean to determine if the key & certificate should be installed as
+#   a single combined file. This setting expects that install key is
+#   true
+# 
+#   NOTE: The public cert file will still be written out per normal but
+#   the keyfile will also have the fully realized certfile appended to
+#   the end as well.
+#
+#   Default: false
 #
 # === Examples
 #
@@ -63,6 +82,8 @@ define sslmgmt::cert (
   $ensure       = true,
   $chain        = undef,
   $customstore  = undef,
+  $installkey   = true,
+  $onefile      = false,
 ) {
   # load the params class so we can get our pkistore types
   include ::sslmgmt::params
@@ -82,6 +103,10 @@ define sslmgmt::cert (
       fail("ensure must be one of true, false, 'present', or 'absent'")
     }
   }
+
+  # validate our booleans
+  validate_bool($installkey)
+  validate_bool($onefile)
 
   # get our certificate hash
   $certificates = hiera('sslmgmt::certs')
@@ -118,6 +143,16 @@ define sslmgmt::cert (
     $cert = $certstore['cert']
   }
 
+  # we only care if there is a key if we are supposed to install the key
+  if ($installkey) {
+    if (! has_key($certstore, 'key')) {
+      fail("certificate ${title} does not have a 'key' value")
+    }
+    else {
+      $key = $certstore['key']
+    }
+  }
+
   # crack out the default pkistore as we need to use it for a few
   # operations
   $_default_pkistore = $sslmgmt::params::pkistore['default']
@@ -137,8 +172,8 @@ define sslmgmt::cert (
         $sslmgmt::params::pkistore[$pkistore])
   }
 
-  if (has_key($_pkistore, 'filename')) {
-    $_certname = $_pkistore['filename']
+  if (has_key($_pkistore, 'certfilename')) {
+    $_certname = $_pkistore['certfilename']
   }
   else {
     $_certpath = $_pkistore['certpath']
@@ -148,6 +183,17 @@ define sslmgmt::cert (
     }
     else {
       $_certname = "${_certpath}/${title}.pem"
+    }
+  }
+
+  if ($installkey) {
+    if (has_key($_pkistore, 'keyfilename')) {
+      $_keyname = $_pkistore['keyfilename']
+    }
+    else {
+      $_keypath = $_pkistore['keypath']
+
+      $_keyname = "${_keypath}/${title}.pem"
     }
   }
 
@@ -165,5 +211,25 @@ define sslmgmt::cert (
     owner   => $_pkistore['owner'],
     group   => $_pkistore['group'],
     mode    => $_pkistore['certmode'],
+  }
+
+  # write out the key if we need to
+  if ($installkey) {
+    # determine if we need to write key + cert or just key
+    if ($onefile) {
+      $_keycontent = "${key}${_certcontent}"
+    }
+    else {
+      $_keycontent = $key
+    }
+
+    # keys are always stored mode 0600
+    file { $_keyname:
+      ensure  => $ensure,
+      content => $_keycontent,
+      owner   => $_pkistore['owner'],
+      group   => $_pkistore['group'],
+      mode    => '0600',
+    }
   }
 }
