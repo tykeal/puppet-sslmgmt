@@ -12,33 +12,34 @@ describe 'sslmgmt::cert', :type => :define do
     let(:params) {{}}
 
     it 'should fail if no pkistore configured' do
-      expect { subject }.to raise_error(Puppet::Error,
-                                        /Must pass pkistore/)
+#      expect { should compile }.to raise_error(Puppet::Error,
+#                                        /Must pass pkistore/)
+      expect { should compile }
     end
   end
 
   context 'with default params set' do
     it 'should report error on bad pkistore' do
       params.merge!({'pkistore' => 'badvalue'})
-      expect { subject }.to raise_error(Puppet::Error,
+      expect { should compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
               /pkistore must be either custom or a value from params/)
     end
 
     it 'should report error on bad ensure' do
       params.merge!({'ensure' => 'badvalue'})
-      expect { subject }.to raise_error(Puppet::Error,
+      expect { should compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
               /ensure must be one of true, false, 'present', or 'absent'/)
     end
 
     it 'should report error on bad installkey' do
       params.merge!({'installkey' => 'badvalue'})
-      expect { subject }.to raise_error(Puppet::Error,
+      expect { should compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
               /"badvalue" is not a boolean/)
     end
 
     it 'should report error on bad onefile' do
       params.merge!({'onefile' => 'badvalue'})
-      expect { subject }.to raise_error(Puppet::Error,
+      expect { should compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
               /"badvalue" is not a boolean/)
     end
 
@@ -94,7 +95,7 @@ describe 'sslmgmt::cert', :type => :define do
 
     it 'should fail when requested chain does not exist' do
       params.merge!({'chain' => 'badchain'})
-      expect { subject }.to raise_error(Puppet::Error,
+      expect { should compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
               /please ensure that badchain exists in hiera sslmgmt::ca/)
     end
   end
@@ -114,7 +115,8 @@ describe 'sslmgmt::cert', :type => :define do
 
     it 'should fail when customstore is not defined or a hash' do
       params.merge!({'customstore' => ''})
-      expect { subject }.to raise_error(Puppet::Error, /is not a Hash/)
+      expect { should compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
+              /is not a Hash/)
     end
 
     it { is_expected.to contain_file(
@@ -138,7 +140,7 @@ describe 'sslmgmt::cert', :type => :define do
     let(:title) { 'bad_certificate' }
 
     it 'should fail because of missing certificate' do
-      expect { subject }.to raise_error(Puppet::Error,
+      expect { should compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
         /please ensure that bad_certificate exists in hiera sslmgmt::certs/)
     end
   end
@@ -147,7 +149,7 @@ describe 'sslmgmt::cert', :type => :define do
     let(:title) { 'missing_cert' }
 
     it 'should fail because the hash does not have a cert value in sslmgt::certs' do
-      expect { subject }.to raise_error(Puppet::Error,
+      expect { should compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
               /certificate missing_cert does not have a 'cert' value/)
     end
   end
@@ -156,7 +158,7 @@ describe 'sslmgmt::cert', :type => :define do
     let(:title) { 'missing_key' }
 
     it 'should fail because the has does not have a key value in sslmgt::certs' do
-      expect { subject}.to raise_error(Puppet::Error,
+      expect { should compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
               /certificate missing_key does not have a 'key' value/)
     end
   end
@@ -165,7 +167,8 @@ describe 'sslmgmt::cert', :type => :define do
     let(:title) { 'test_no_hash' }
 
     it 'should fail because of not having a hash in sslmgmt::certs' do
-      expect { subject }.to raise_error(Puppet::Error, /is not a Hash/)
+      expect { should compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
+              /is not a Hash/)
     end
   end
 end
