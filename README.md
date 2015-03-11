@@ -47,17 +47,74 @@ modes.
 Install the module from the forge and then call the define on a given
 certificate.
 
+```hiera
+sslmgmt::certs:
+  cert_base_file_title:
+    cert: |
+          Your certificate
+	  here
+    key: |
+         Your certificate
+	 key here
+```
+
+```puppet
+sslmgmt::cert{ 'cert_base_file_title':
+  pkistore: 'default',
+}
+```
+
+This will install a non-chained public certificate at
+`/etc/pki/tls/certs/cert_base_file_title.pem` and a private key at
+`/etc/pki/tls/private/cert_base_file_title.pem`
+
 ## Usage
 
-Put the classes, types, and resources for customizing, configuring, and doing
-the fancy stuff with your module here.
+As in the beginning with sslmgmt section configurations are driven by
+hiera (`sslmgmt::ca` and `sslmgmt::certs`). It's pretty easy to things
+using an extra hiera hash and a `create_resources` call.
+
+```hiera
+certs_for_system:
+  cert_base_file_title:
+    pkistore: 'default'
+    chain: 'somechain'
+  cert_base_file_title2:
+    pkistore: 'default'
+    ensure: 'absent'
+
+sslmgmt::certs:
+  cert_base_file_title:
+    cert: |
+          Your certificate
+	  here
+    key: |
+         Your certificate
+	 key here
+  cert_base_file_title2:
+    cert: |
+          Even when setting absent you must define
+	  cert and key
+    key: |
+         Even when setting absent you must define
+	 cert and key
+
+sslmgmt::ca:
+  somechain: |
+             Intermediate chain
+	     through to
+	     base CA
+```
+
+```puppet
+$sslcerts = hiera(certs_for_system)
+create_resources(sslmgmt::cert, $sslcerts)
+```
 
 ## Reference
 
-Here, list the classes, types, providers, facts, etc contained in your module.
-This section should include all of the under-the-hood workings of your module so
-people know what the module is touching on their system but don't need to mess
-with things. (We are working on automating this section!)
+* `sslmgmt::cert`: Only useful option in module. Installs public certs
+  as well as private keys. Configurable via hiera. *Type*: define
 
 ## Limitations
 
@@ -65,5 +122,4 @@ Only tested on EL7 at present
 
 ## Development
 
-Since your module is awesome, other users will want to play with it. Let them
-know what the ground rules for contributing are.
+Please raise issues on GitHub or submit a pull request.
