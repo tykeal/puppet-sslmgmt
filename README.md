@@ -1,5 +1,7 @@
 # sslmgmt
 
+[![Build Status](https://travis-ci.org/tykeal/puppet-sslmgmt.png)](https://travis-ci.org/tykeal/puppet-sslmgmt)
+
 #### Table of Contents
 
 1. [Overview](#overview)
@@ -13,8 +15,6 @@
 6. [Development - Guide for contributing to the module](#development)
 
 ## Overview
-
-[![Build Status](https://travis-ci.org/tykeal/puppet-sslmgmt.png)](https://travis-ci.org/tykeal/puppet-sslmgmt)
 
 A simple way to manage certificates in your infrastructure without an
 HSM.
