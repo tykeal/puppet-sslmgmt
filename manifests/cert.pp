@@ -12,10 +12,10 @@
 #
 # [*ensure*]
 #   Ensure the certificate does or does not exist
-#   Default: true
+#   Default: present
 #   Options:
-#     true (or present)
-#     false (or absent)
+#     present
+#     absent
 #
 # [*chain*]
 #   The key to lookup out of hiera for chaining purposes
@@ -79,7 +79,7 @@
 #
 define sslmgmt::cert (
   $pkistore,
-  $ensure       = true,
+  $ensure       = 'present',
   $chain        = undef,
   $customstore  = undef,
   $installkey   = true,
@@ -98,9 +98,15 @@ define sslmgmt::cert (
   }
 
   # verify that ensure is a valid option
-  if (! is_bool($ensure)) {
-    if (! ($ensure in ['present', 'absent'])) {
-      fail("ensure must be one of true, false, 'present', or 'absent'")
+  validate_string($ensure)
+  if (! ($ensure in ['present', 'absent'])) {
+    fail("ensure must be one of 'present', or 'absent'")
+  } else {
+    # ensure of present should actually be file
+    if ($ensure == 'present') {
+      $_ensure = 'file'
+    } else {
+      $_ensure = $ensure
     }
   }
 
@@ -206,7 +212,7 @@ define sslmgmt::cert (
   }
 
   file { $_certname:
-    ensure  => $ensure,
+    ensure  => $_ensure,
     content => $_certcontent,
     owner   => $_pkistore['owner'],
     group   => $_pkistore['group'],
@@ -225,7 +231,7 @@ define sslmgmt::cert (
 
     # keys are always stored mode 0600
     file { $_keyname:
-      ensure  => $ensure,
+      ensure  => $_ensure,
       content => $_keycontent,
       owner   => $_pkistore['owner'],
       group   => $_pkistore['group'],

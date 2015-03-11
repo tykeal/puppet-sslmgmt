@@ -28,7 +28,7 @@ describe 'sslmgmt::cert', :type => :define do
     it 'should report error on bad ensure' do
       params.merge!({'ensure' => 'badvalue'})
       expect { should compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
-              /ensure must be one of true, false, 'present', or 'absent'/)
+              /ensure must be one of 'present', or 'absent'/)
     end
 
     it 'should report error on bad installkey' do
@@ -45,6 +45,7 @@ describe 'sslmgmt::cert', :type => :define do
 
     it { is_expected.to contain_file(
           '/etc/pki/tls/certs/test_certificate.pem').with(
+          'ensure'  => 'file',
           'mode'    => '0644',
           'owner'   => 'root',
           'group'   => 'root',
@@ -53,6 +54,7 @@ describe 'sslmgmt::cert', :type => :define do
 
     it { is_expected.to contain_file(
           '/etc/pki/tls/private/test_certificate.pem').with(
+          'ensure'  => 'file',
           'mode'    => '0600',
           'owner'   => 'root',
           'group'   => 'root',
