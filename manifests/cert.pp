@@ -208,6 +208,7 @@ define sslmgmt::cert (
   file { $_certname:
     ensure  => $ensure,
     content => $_certcontent,
+    source  => undef,
     owner   => $_pkistore['owner'],
     group   => $_pkistore['group'],
     mode    => $_pkistore['certmode'],
@@ -227,6 +228,7 @@ define sslmgmt::cert (
     file { $_keyname:
       ensure  => $ensure,
       content => $_keycontent,
+      source  => undef,
       owner   => $_pkistore['owner'],
       group   => $_pkistore['group'],
       mode    => '0600',
