@@ -30,7 +30,7 @@ CA chaining needed to properly deploy certificate around your
 environment and get it right everytime.
 
 All information is stored in what we refer to as key banks which are
-hash sets stored in hiera. If you're leary of storing your private keys
+hash sets stored in hiera. If you're leery of storing your private keys
 in your hiera please look at using eyaml to resolve this issue.
 
 ## Setup
@@ -47,15 +47,15 @@ modes.
 Install the module from the forge and then call the define on a given
 certificate.
 
-```hiera
+```yaml
 sslmgmt::certs:
   cert_base_file_title:
     cert: |
           Your certificate
-	  here
+          here
     key: |
          Your certificate
-	 key here
+         key here
 ```
 
 ```puppet
@@ -74,7 +74,7 @@ As in the beginning with sslmgmt section configurations are driven by
 hiera (`sslmgmt::ca` and `sslmgmt::certs`). It's pretty easy to things
 using an extra hiera hash and a `create_resources` call.
 
-```hiera
+```yaml
 certs_for_system:
   cert_base_file_title:
     pkistore: 'default'
@@ -87,23 +87,23 @@ sslmgmt::certs:
   cert_base_file_title:
     cert: |
           Your certificate
-	  here
+          here
     key: |
          Your certificate
-	 key here
+         key here
   cert_base_file_title2:
     cert: |
           Even when setting absent you must define
-	  cert and key
+          cert and key
     key: |
          Even when setting absent you must define
-	 cert and key
+         cert and key
 
 sslmgmt::ca:
   somechain: |
              Intermediate chain
-	     through to
-	     base CA
+             through to
+             base CA
 ```
 
 ```puppet
@@ -113,8 +113,98 @@ create_resources(sslmgmt::cert, $sslcerts)
 
 ## Reference
 
-* `sslmgmt::cert`: Only useful option in module. Installs public certs
-  as well as private keys. Configurable via hiera. *Type*: define
+* `sslmgmt::cert`: Installs public certs as well as private keys.
+  Configurable via hiera. *Type*: define
+
+  The following options are accepted by `sslmgmt::cert`:
+
+  * **required** `pkistore`: The pkistore that should be used. Normally `default` is
+    all that should be used. If this is set to `custom` than the
+    `customstore` option needs to be set. *Type*: string
+
+  * **optional** `ensure`: Should the certificate / key be avaialble
+    or removed. *Default*: `present`. *Options*: `present`, `absent`
+    *Type*: string
+
+  * **optional** `chain`: Should the CA chain be appeneded to the public
+    certificate. *Default*: `undef`. If set, this should be the name of the CA
+    option from the `sslmgmt::ca` hash. *Type*: hash
+
+    The hash is defined as follows:
+
+    ```yaml
+    sslmgmt::ca:
+      somecachain: |
+                   You're CA chain defined as sub-signators then anchor
+    ```
+
+  * **optional** `customstore`: A hash containing certificate store
+    information. This is only useful if `pkistore` was set to `custom`.
+    Information used in the passed hash will be merged with the defined
+    default store (see params.pp) so only values that are specifically
+    overridden will be sumarily used. *Type*: hash
+
+    ```puppet
+    {
+      'certpath' => 'fully qualified storage path for the cert',
+      'keypath'  => 'fully qualified storage path for the key',
+      'certmode' => 'the file mode to apply to the public cert',
+      'owner'    => 'certificate / key owner'
+      'group'    => 'certificate / key group'
+    }
+    ```
+
+    In addition to the above parameters the following parameters can
+    only be used when passing a `customstore`
+
+    ```puppet
+    'certfilename' => 'fully qualified filename to use for the public
+                      certificate'
+    'keyfilenmae'  => 'fully qualified filename to use for the private
+                      key'
+    ```
+
+  * **optional** `installkey`: Should the private key be installed on
+    the system as well? *Type*: boolean *Default*: true
+
+  * **optional** `onefile`: Should the private key have the public cert
+    (and potentially chain CA) appended to the file? *Type*: boolean
+    *Default*: false
+
+* `sslmgmt::ca_dh`: Installs CA certs (or DH agreements) into the cert
+  store. This is useful for putting down chained CAs for use in CA
+  validation / trust store. *Type*: define
+
+  * **required** `pkistore`: The pkistore that should be used. Normally
+    `default` is all that should be used. If this is set to `custom`
+    than the `customstore` option needs to be set. *Type*: string
+
+  * **optional** `ensure`: Should the certificate / key be avaialble
+    or removed. *Default*: `present`. *Options*: `present`, `absent`
+    *Type*: string
+
+  * **optional** `customstore`: A hash containing certificate store
+    information. This is only useful if `pkistore` was set to `custom`.
+    Information used in the passed hash will be merged with the defined
+    default store (see params.pp) so only values that are specifically
+    overridden will be sumarily used. *Type*: hash
+
+    ```puppet
+    {
+      'certpath' => 'fully qualified storage path for the cert',
+      'certmode' => 'the file mode to apply to the public cert',
+      'owner'    => 'certificate / key owner'
+      'group'    => 'certificate / key group'
+    }
+    ```
+
+    In addition to the above parameters the following parameters can
+    only be used when passing a `customstore`
+
+    ```puppet
+    'certfilename' => 'fully qualified filename to use for the CA
+                      certificate or DH agreement'
+    ```
 
 ## Limitations
 
