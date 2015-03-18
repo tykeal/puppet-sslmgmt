@@ -231,11 +231,12 @@ define sslmgmt::cert (
 
     # keys are always stored mode 0600
     file { $_keyname:
-      ensure  => $_ensure,
-      content => $_keycontent,
-      owner   => $_pkistore['owner'],
-      group   => $_pkistore['group'],
-      mode    => '0600',
+      ensure    => $_ensure,
+      content   => $_keycontent,
+      owner     => $_pkistore['owner'],
+      group     => $_pkistore['group'],
+      mode      => '0600',
+      show_diff => false,
     }
   }
 }

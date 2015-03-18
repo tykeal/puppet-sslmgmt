@@ -53,11 +53,12 @@ describe 'sslmgmt::cert', :type => :define do
 
     it { is_expected.to contain_file(
           '/etc/pki/tls/private/test_certificate.pem').with(
-          'ensure'  => 'file',
-          'mode'    => '0600',
-          'owner'   => 'root',
-          'group'   => 'root',
-          'content' => "This is the key for\ntestcert\n",
+          'ensure'    => 'file',
+          'mode'      => '0600',
+          'owner'     => 'root',
+          'group'     => 'root',
+          'content'   => "This is the key for\ntestcert\n",
+          'show_diff' => false,
     ) }
 
     it 'should have a combined key and certificate file if onefile is set' do
@@ -130,10 +131,11 @@ describe 'sslmgmt::cert', :type => :define do
 
     it { is_expected.to contain_file(
         '/random/filepath/customkey.pem').with(
-          'owner'   => 'randomowner',
-          'mode'    => '0600',
-          'group'   => 'randomgroup',
-          'content' => "This is the key for\ntestcert\n",
+          'owner'     => 'randomowner',
+          'mode'      => '0600',
+          'group'     => 'randomgroup',
+          'content'   => "This is the key for\ntestcert\n",
+          'show_diff' => false,
     ) }
   end
 
