@@ -18,6 +18,9 @@
       "name": "puppetlabs-stdlib",
       "version_requirement": "4.4.x"
     }
+  ],
+  "tags": [
+    "ssl"
   ]
 }
 
