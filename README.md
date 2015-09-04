@@ -60,7 +60,7 @@ sslmgmt::certs:
 
 ```puppet
 sslmgmt::cert{ 'cert_base_file_title':
-  pkistore: 'default',
+  pkistore => 'default',
 }
 ```
 
