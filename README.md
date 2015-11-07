@@ -135,7 +135,7 @@ create_resources(sslmgmt::cert, $sslcerts)
     ```yaml
     sslmgmt::ca:
       somecachain: |
-                   You're CA chain defined as sub-signators then anchor
+                   Your CA chain defined as sub-signators then anchor
     ```
 
   * **optional** `customstore`: A hash containing certificate store
