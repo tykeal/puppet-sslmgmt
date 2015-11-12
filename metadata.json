@@ -1,6 +1,6 @@
 {
   "name": "tykeal-sslmgmt",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "tykeal",
   "summary": "A simple way to manage certificates in your infrastructure without an HSM.",
   "license": "Apache-2.0",
@@ -16,7 +16,7 @@
   "dependencies": [
     {
       "name": "puppetlabs-stdlib",
-      "version_requirement": ">= 4.4.0 < 4.8.0" 
+      "version_requirement": ">= 4.4.0 <= 4.9.0" 
     }
   ],
   "tags": [
