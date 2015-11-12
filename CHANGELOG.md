@@ -1,3 +1,10 @@
+##2015-11-12 - Update releast to v1.0.1
+###Summary
+
+* Minor documenation spelling fix
+
+* Increase range accepted for puppetlabs/stdlib
+
 ##2015-03-18 - Update release to v1.0.0
 ###Summary
 
