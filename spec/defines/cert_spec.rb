@@ -12,8 +12,7 @@ describe 'sslmgmt::cert', :type => :define do
     let(:params) {{}}
 
     it 'should fail if no pkistore configured' do
-      expect { should compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError,
-              /Must pass pkistore/)
+      expect { should compile }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
     end
   end
 

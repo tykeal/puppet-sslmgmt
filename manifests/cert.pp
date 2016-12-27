@@ -117,7 +117,7 @@ define sslmgmt::cert (
   # get our certificate hash
   $certificates = hiera('sslmgmt::certs')
   validate_hash($certificates)
-  
+
   # make sure we actually have a cert
   if (! has_key($certificates, $title)) {
     fail("please ensure that ${title} exists in hiera sslmgmt::certs")
@@ -168,7 +168,7 @@ define sslmgmt::cert (
   # It is then required to be a hash
   if ($pkistore == 'custom') {
     validate_hash($customstore)
-  
+
     # merge the customstore with the default store to get the real
     # pkistore
     $_pkistore = merge($_default_pkistore, $customstore)

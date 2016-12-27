@@ -113,7 +113,7 @@ define sslmgmt::ca_dh (
   # It is then required to be a hash
   if ($pkistore == 'custom') {
     validate_hash($customstore)
-  
+
     # merge the customstore with the default store to get the real
     # pkistore
     $_pkistore = merge($_default_pkistore, $customstore)
