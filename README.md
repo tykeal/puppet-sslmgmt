@@ -160,7 +160,7 @@ create_resources(sslmgmt::cert, $sslcerts)
     ```puppet
     'certfilename' => 'fully qualified filename to use for the public
                       certificate'
-    'keyfilenmae'  => 'fully qualified filename to use for the private
+    'keyfilename'  => 'fully qualified filename to use for the private
                       key'
     ```
 
