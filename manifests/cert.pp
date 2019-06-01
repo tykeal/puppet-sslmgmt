@@ -78,45 +78,31 @@
 # @License Apache-2.0 <http://spdx.org/licenses/Apache-2.0>
 #
 define sslmgmt::cert (
-  $pkistore,
-  $ensure       = 'present',
-  $chain        = undef,
-  $customstore  = undef,
-  $installkey   = true,
-  $onefile      = false,
+  String $pkistore,
+  Enum['present', 'absent'] $ensure = 'present',
+  Optional[String] $chain = undef,
+  Optional[Hash] $customstore = undef,
+  Boolean $installkey = true,
+  Boolean $onefile = false,
 ) {
   # load the params class so we can get our pkistore types
   include ::sslmgmt::params
 
-  # verify that pkistore is
-  # a) a string
-  # b) one of the pkistore hash types or custom
-  validate_string($pkistore)
+  # verify that pkistore is one of the pkistore hash types or custom
   if ($pkistore != 'custom') and
     (!has_key($::sslmgmt::params::pkistore, $pkistore)) {
     fail('pkistore must be either custom or a value from params')
   }
 
-  # verify that ensure is a valid option
-  validate_string($ensure)
-  if (! ($ensure in ['present', 'absent'])) {
-    fail("ensure must be one of 'present', or 'absent'")
+  # ensure of present should actually be file
+  if ($ensure == 'present') {
+    $_ensure = 'file'
   } else {
-    # ensure of present should actually be file
-    if ($ensure == 'present') {
-      $_ensure = 'file'
-    } else {
-      $_ensure = $ensure
-    }
+    $_ensure = $ensure
   }
 
-  # validate our booleans
-  validate_bool($installkey)
-  validate_bool($onefile)
-
   # get our certificate hash
-  $certificates = hiera('sslmgmt::certs')
-  validate_hash($certificates)
+  $certificates = lookup('sslmgmt::certs')
 
   # make sure we actually have a cert
   if (! has_key($certificates, $title)) {
@@ -125,11 +111,7 @@ define sslmgmt::cert (
 
   # make sure that there is a chain store if it's being requested
   if ($chain) {
-    validate_string($chain)
-
-    $ca = hiera('sslmgmt::ca')
-    validate_hash($ca)
-
+    $ca = lookup('sslmgmt::ca')
     if (! has_key($ca, $chain)) {
       fail("please ensure that ${chain} exists in hiera sslmgmt::ca")
     }
@@ -140,7 +122,6 @@ define sslmgmt::cert (
 
   # make sure the define cert actually has needed values
   $certstore = $certificates[$title]
-  validate_hash($certstore)
 
   if (! has_key($certstore, 'cert')) {
     fail("certificate ${title} does not have a 'cert' value")
@@ -162,13 +143,10 @@ define sslmgmt::cert (
   # crack out the default pkistore as we need to use it for a few
   # operations
   $_default_pkistore = $sslmgmt::params::pkistore['default']
-  validate_hash($_default_pkistore)
 
   # customstore is only used if pkistore is set to custom
   # It is then required to be a hash
   if ($pkistore == 'custom') {
-    validate_hash($customstore)
-
     # merge the customstore with the default store to get the real
     # pkistore
     $_pkistore = merge($_default_pkistore, $customstore)
