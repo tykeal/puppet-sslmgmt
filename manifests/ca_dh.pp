@@ -64,38 +64,28 @@
 # @License Apache-2.0 <http://spdx.org/licenses/Apache-2.0>
 #
 define sslmgmt::ca_dh (
-  $pkistore,
-  $ensure       = 'present',
-  $customstore  = undef,
+  String $pkistore,
+  Enum['present', 'absent'] $ensure = 'present',
+  Optional[Hash] $customstore = undef,
 ) {
   # load the params class so we can get our pkistore types
   include ::sslmgmt::params
 
-  # verify that pkistore is
-  # a) a string
-  # b) one of the pkistore hash types or custom
-  validate_string($pkistore)
+  # verify that pkistore is one of the pkistore hash types or custom
   if ($pkistore != 'custom') and
     (!has_key($::sslmgmt::params::pkistore, $pkistore)) {
     fail('pkistore must be either custom or a value from params')
   }
 
-  # verify that ensure is a valid option
-  validate_string($ensure)
-  if (! ($ensure in ['present', 'absent'])) {
-    fail("ensure must be one of 'present', or 'absent'")
+  # ensure of present should actually be file
+  if ($ensure == 'present') {
+    $_ensure = 'file'
   } else {
-    # ensure of present should actually be file
-    if ($ensure == 'present') {
-      $_ensure = 'file'
-    } else {
-      $_ensure = $ensure
-    }
+    $_ensure = $ensure
   }
 
   # get our CA hash
-  $ca = hiera('sslmgmt::ca')
-  validate_hash($ca)
+  $ca = lookup('sslmgmt::ca')
 
   if (! has_key($ca, $title)) {
     fail("please ensure that ${title} exists in hiera sslmgmt::ca")
@@ -107,13 +97,10 @@ define sslmgmt::ca_dh (
   # crack out the default pkistore as we need to use it for a few
   # operations
   $_default_pkistore = $sslmgmt::params::pkistore['default']
-  validate_hash($_default_pkistore)
 
   # customstore is only used if pkistore is set to custom
   # It is then required to be a hash
   if ($pkistore == 'custom') {
-    validate_hash($customstore)
-
     # merge the customstore with the default store to get the real
     # pkistore
     $_pkistore = merge($_default_pkistore, $customstore)
